@@ -1,2 +1,2 @@
 # Annuiteettilaskuri
-Lainaerän laskuto autorahoituksee 
+Lainaerän laskuri autorahoitukseen 
