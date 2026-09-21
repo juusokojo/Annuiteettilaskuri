@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Annuiteettilaskuri</title>
-<meta name="description" content="Autorahoituksen annuiteettilaskuri: kuukausierä ja korkojen määrä, kun mukana on viimeinen suurempi erä.">
+<meta name="description" content="Autorahoituksen laskuri: kuukausierä, korot, kulut ja todellinen vuosikorko.">
 <style>
   :root {
     color-scheme: light dark;
@@ -15,53 +15,44 @@
     --muted: #6b665e;
     --accent: #1f5d4c;
     --accent-soft: #e8f1ee;
-    --warn: #8a5a1a;
+    --flag: #8a5a1a;
+    --flag-soft: #f7efe2;
     --radius: 12px;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #171614;
-      --surface: #201f1c;
-      --border: #38352f;
-      --text: #f0ede7;
-      --muted: #a29c92;
-      --accent: #6fbfa5;
-      --accent-soft: #23342f;
-      --warn: #d7a459;
+      --bg: #171614; --surface: #201f1c; --border: #38352f; --text: #f0ede7;
+      --muted: #a29c92; --accent: #6fbfa5; --accent-soft: #23342f;
+      --flag: #d7a459; --flag-soft: #2c2519;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #171614;
-    --surface: #201f1c;
-    --border: #38352f;
-    --text: #f0ede7;
-    --muted: #a29c92;
-    --accent: #6fbfa5;
-    --accent-soft: #23342f;
-    --warn: #d7a459;
+    --bg: #171614; --surface: #201f1c; --border: #38352f; --text: #f0ede7;
+    --muted: #a29c92; --accent: #6fbfa5; --accent-soft: #23342f;
+    --flag: #d7a459; --flag-soft: #2c2519;
   }
 
   * { box-sizing: border-box; }
   body {
-    margin: 0;
-    padding: 32px 16px 64px;
-    background: var(--bg);
-    color: var(--text);
+    margin: 0; padding: 32px 16px 64px;
+    background: var(--bg); color: var(--text);
     font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.55;
-    -webkit-text-size-adjust: 100%;
+    line-height: 1.55; -webkit-text-size-adjust: 100%;
   }
-  .wrap { max-width: 720px; margin: 0 auto; }
+  .wrap { max-width: 760px; margin: 0 auto; }
   h1 { font-size: 1.6rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h2 { font-size: 1.05rem; margin: 0 0 12px; }
   .lead { color: var(--muted); margin: 0 0 28px; font-size: 0.95rem; }
 
   .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 20px;
   }
+  .group-title {
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); font-weight: 700; margin: 0 0 12px;
+  }
+  .group + .group { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
 
   .fields { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   @media (max-width: 560px) { .fields { grid-template-columns: 1fr; } }
@@ -69,83 +60,59 @@
   label { display: block; font-size: 0.86rem; font-weight: 600; margin-bottom: 6px; }
   .hint { display: block; font-weight: 400; color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
 
-  .input-row { display: flex; align-items: stretch; }
+  .input-row { display: flex; }
   input[type="number"] {
-    flex: 1 1 auto;
-    min-width: 0;
-    font: inherit;
-    font-variant-numeric: tabular-nums;
-    padding: 10px 12px;
-    color: var(--text);
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px 0 0 8px;
-    border-right: none;
+    flex: 1 1 auto; min-width: 0; font: inherit; font-variant-numeric: tabular-nums;
+    padding: 10px 12px; color: var(--text); background: var(--bg);
+    border: 1px solid var(--border); border-radius: 8px 0 0 8px; border-right: none;
   }
-  input[type="number"]:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: -2px;
-    position: relative;
-  }
+  input[type="number"]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
   .unit {
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    background: var(--accent-soft);
-    border: 1px solid var(--border);
-    border-radius: 0 8px 8px 0;
-    color: var(--muted);
-    font-size: 0.88rem;
-    white-space: nowrap;
+    display: flex; align-items: center; padding: 0 12px;
+    background: var(--accent-soft); border: 1px solid var(--border);
+    border-radius: 0 8px 8px 0; color: var(--muted); font-size: 0.88rem; white-space: nowrap;
   }
 
-  .results { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
+  .results { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   @media (max-width: 560px) { .results { grid-template-columns: 1fr; } }
-  .result {
-    background: var(--accent-soft);
-    border-radius: 10px;
-    padding: 16px;
-  }
+  .result { background: var(--accent-soft); border-radius: 10px; padding: 16px; }
+  .result.flag { background: var(--flag-soft); }
   .result .k { font-size: 0.82rem; color: var(--muted); margin-bottom: 2px; }
   .result .v {
-    font-size: 1.7rem;
-    font-weight: 650;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
-    color: var(--accent);
+    font-size: 1.6rem; font-weight: 650; font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em; color: var(--accent);
   }
+  .result.flag .v { color: var(--flag); }
+  .result .sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
 
   dl.detail { margin: 20px 0 0; display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; font-size: 0.9rem; }
   dl.detail dt { color: var(--muted); }
   dl.detail dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+  dl.detail dt.sum, dl.detail dd.sum { border-top: 1px solid var(--border); padding-top: 8px; font-weight: 600; }
+  dl.detail dt.sum { color: var(--text); }
 
-  .error {
-    display: none;
-    margin-top: 16px;
-    padding: 10px 12px;
-    border-left: 3px solid var(--warn);
-    color: var(--warn);
-    font-size: 0.9rem;
+  .note {
+    margin-top: 18px; padding: 12px 14px; border-radius: 8px;
+    background: var(--flag-soft); color: var(--flag); font-size: 0.88rem;
   }
+  .note.hidden { display: none; }
+
+  .error { display: none; margin-top: 16px; padding: 10px 12px; border-left: 3px solid var(--flag); color: var(--flag); font-size: 0.9rem; }
   .error.on { display: block; }
 
   details { border-top: 1px solid var(--border); padding-top: 14px; margin-top: 20px; }
+  details:first-of-type { }
   summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; }
   details p, details li { font-size: 0.9rem; color: var(--muted); }
-  details .formula, .formula {
+  .formula {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    white-space: pre;
-    line-height: 1.6;
-    font-size: 0.85rem;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    overflow-x: auto;
-    color: var(--text);
+    white-space: pre; line-height: 1.6; font-size: 0.85rem;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px; overflow-x: auto; color: var(--text);
   }
+  .body-text { font-size: 0.92rem; margin: 0 0 12px; }
 
-  .table-scroll { overflow-x: auto; margin-top: 12px; }
+  .table-scroll { overflow-x: auto; margin-top: 12px; max-height: 340px; }
   table { border-collapse: collapse; width: 100%; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
   th, td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
   th:first-child, td:first-child { text-align: left; }
@@ -157,119 +124,149 @@
 <body>
 <div class="wrap">
   <h1>Annuiteettilaskuri</h1>
-  <p class="lead">Autorahoituksen kuukausierä ja korkojen määrä, kun sopimukseen kuuluu viimeinen suurempi erä.</p>
+  <p class="lead">Autorahoituksen kuukausierä, korot, kulut ja todellinen vuosikorko.</p>
 
-  <div class="card">
-    <form id="lomake" novalidate>
+  <form id="lomake" class="card" novalidate>
+    <div class="group">
+      <p class="group-title">Kauppa ja laina</p>
       <div class="fields">
         <div>
-          <label for="hinta">Ostohinta
-            <span class="hint">Rahoitettava summa</span>
-          </label>
-          <div class="input-row">
-            <input id="hinta" type="number" min="0" step="100" value="30000" inputmode="decimal">
-            <span class="unit">€</span>
-          </div>
+          <label for="hinta">Ostohinta<span class="hint">Auton hinta euroina</span></label>
+          <div class="input-row"><input id="hinta" type="number" min="0" step="100" value="30000" inputmode="decimal"><span class="unit">€</span></div>
         </div>
-
         <div>
-          <label for="bullet">Viimeinen suurempi erä
-            <span class="hint">Osuus ostohinnasta</span>
-          </label>
-          <div class="input-row">
-            <input id="bullet" type="number" min="0" max="99" step="1" value="30" inputmode="decimal">
-            <span class="unit">%</span>
-          </div>
+          <label for="kasiraha">Käsiraha<span class="hint">Itse maksettava osuus</span></label>
+          <div class="input-row"><input id="kasiraha" type="number" min="0" step="100" value="5000" inputmode="decimal"><span class="unit">€</span></div>
         </div>
-
         <div>
-          <label for="korko">Lainan korko
-            <span class="hint">Nimellinen vuosikorko</span>
-          </label>
-          <div class="input-row">
-            <input id="korko" type="number" min="0" max="100" step="0.01" value="5.9" inputmode="decimal">
-            <span class="unit">% / vuosi</span>
-          </div>
+          <label for="bullet">Viimeinen suurempi erä<span class="hint">Osuus ostohinnasta</span></label>
+          <div class="input-row"><input id="bullet" type="number" min="0" max="99" step="1" value="30" inputmode="decimal"><span class="unit">%</span></div>
         </div>
-
         <div>
-          <label for="aika">Maksuaika
-            <span class="hint">Sopimuksen pituus</span>
-          </label>
-          <div class="input-row">
-            <input id="aika" type="number" min="1" max="600" step="1" value="60" inputmode="numeric">
-            <span class="unit">kk</span>
-          </div>
+          <label for="korko">Lainan korko<span class="hint">Nimellinen vuosikorko</span></label>
+          <div class="input-row"><input id="korko" type="number" min="0" max="100" step="0.01" value="5.9" inputmode="decimal"><span class="unit">% / vuosi</span></div>
+        </div>
+        <div>
+          <label for="aika">Maksuaika<span class="hint">Sopimuksen pituus</span></label>
+          <div class="input-row"><input id="aika" type="number" min="1" max="600" step="1" value="60" inputmode="numeric"><span class="unit">kk</span></div>
         </div>
       </div>
-      <p class="error" id="virhe" role="alert"></p>
-    </form>
-  </div>
+    </div>
 
-  <div class="card" id="tulokset">
+    <div class="group">
+      <p class="group-title">Kulut</p>
+      <div class="fields">
+        <div>
+          <label for="avaus">Avausmaksu<span class="hint">Kertaluonteinen perustamiskulu</span></label>
+          <div class="input-row"><input id="avaus" type="number" min="0" step="10" value="250" inputmode="decimal"><span class="unit">€</span></div>
+        </div>
+        <div>
+          <label for="tili">Tilinhoitomaksu<span class="hint">Laskutuslisä joka erässä</span></label>
+          <div class="input-row"><input id="tili" type="number" min="0" step="1" value="8" inputmode="decimal"><span class="unit">€ / kk</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="error" id="virhe" role="alert"></p>
+  </form>
+
+  <div class="card">
     <div class="results">
       <div class="result">
         <div class="k">Kuukausierä</div>
         <div class="v" id="era">–</div>
+        <div class="sub" id="era-sub">sisältää tilinhoitomaksun</div>
       </div>
       <div class="result">
         <div class="k">Korkoa laina-aikana</div>
         <div class="v" id="korot">–</div>
+        <div class="sub">pelkkä korko, ei kuluja</div>
+      </div>
+      <div class="result flag">
+        <div class="k">Todellinen vuosikorko</div>
+        <div class="v" id="tvk">–</div>
+        <div class="sub" id="tvk-sub">vertailuluku</div>
+      </div>
+      <div class="result flag">
+        <div class="k">Luottokustannukset yhteensä</div>
+        <div class="v" id="kustannukset">–</div>
+        <div class="sub">korot ja kulut</div>
       </div>
     </div>
 
+    <p class="note" id="huomio"></p>
+
     <dl class="detail">
+      <dt>Rahoitettava summa</dt><dd id="paaoma">–</dd>
+      <dt>Annuiteettierä ilman kuluja</dt><dd id="era-puhdas">–</dd>
+      <dt>Avausmaksu</dt><dd id="avaus-eur">–</dd>
+      <dt>Tilinhoitomaksut yhteensä</dt><dd id="tili-yht">–</dd>
       <dt>Viimeinen suurempi erä</dt><dd id="bullet-eur">–</dd>
-      <dt>Tavallisia kuukausieriä</dt><dd id="kpl">–</dd>
-      <dt>Maksut yhteensä</dt><dd id="yhteensa">–</dd>
+      <dt class="sum">Maksat yhteensä (käsiraha mukaan lukien)</dt><dd class="sum" id="yhteensa">–</dd>
     </dl>
 
     <details>
       <summary>Lyhennystaulukko</summary>
       <div class="table-scroll">
         <table>
-          <thead>
-            <tr><th>Kk</th><th>Erä</th><th>Korko</th><th>Lyhennys</th><th>Jäljellä</th></tr>
-          </thead>
+          <thead><tr><th>Kk</th><th>Erä</th><th>Korko</th><th>Lyhennys</th><th>Jäljellä</th></tr></thead>
           <tbody id="taulukko"></tbody>
         </table>
       </div>
       <p style="font-size:0.82rem;color:var(--muted);margin:10px 0 0;">
-        Tähdellä merkitty rivi on viimeisen kuukausierän yhteydessä maksettava suurempi erä.
+        Taulukko näyttää annuiteetin ilman kuluja. Tilinhoitomaksu tulee jokaisen erän päälle,
+        ja tähdellä merkitty rivi on viimeisen erän yhteydessä maksettava suurempi erä.
       </p>
     </details>
   </div>
 
   <div class="card">
-    <h2 style="font-size:1.05rem;margin:0 0 10px;">Miten korko lasketaan</h2>
-    <p style="margin:0 0 12px;font-size:0.92rem;">
-      Annuiteettilainassa korko lasketaan aina jäljellä olevalle pääomalle, ei alkuperäiselle
-      ostohinnalle. Kuukausikorko on nimellinen vuosikorko jaettuna kahdellatoista. Joka kuukausi
-      erästä menee ensin korko ja loppu lyhentää pääomaa. Kun pääoma pienenee, korko-osuus pienenee
-      ja lyhennysosuus kasvaa, vaikka erän suuruus pysyy samana.
+    <h2>Miten korko lasketaan</h2>
+    <p class="body-text">
+      Annuiteettilainassa korko lasketaan aina jäljellä olevalle pääomalle, ei ostohinnalle.
+      Kuukausikorko on nimellinen vuosikorko jaettuna kahdellatoista. Joka kuukausi erästä menee
+      ensin korko ja loppu lyhentää pääomaa. Kun pääoma pienenee, korko-osuus pienenee ja
+      lyhennysosuus kasvaa, vaikka erä pysyy samana.
     </p>
-    <p style="margin:0 0 12px;font-size:0.92rem;">
-      Kuukausierä ratkaistaan siitä, että erien nykyarvo yhdessä viimeisen suuremman erän nykyarvon
-      kanssa vastaa rahoitettavaa summaa:
+    <p class="body-text">
+      Kuukausierä ratkaistaan siitä, että erien nykyarvo yhdessä viimeisen suuremman erän
+      nykyarvon kanssa vastaa rahoitettavaa summaa:
     </p>
-    <div class="formula">i = korko / 12 / 100
-v = (1 + i)^(-n)
+    <div class="formula">P = ostohinta − käsiraha
 B = ostohinta × bullet-%
-erä = (ostohinta − B × v) × i / (1 − v)
+i = korko / 12 / 100
+v = (1 + i)^(−n)
 
-korot yhteensä = n × erä + B − ostohinta</div>
-    <p style="margin:12px 0 0;font-size:0.92rem;">
-      Viimeinen suurempi erä pienentää kuukausierää, mutta kasvattaa korkojen kokonaismäärää:
-      jäännösarvon verran pääomaa kantaa korkoa koko sopimuksen ajan, koska sitä ei lyhennetä
-      lainkaan matkan varrella.
+erä  = (P − B × v) × i / (1 − v)
+korot = n × erä + B − P</div>
+    <p class="body-text" style="margin-top:12px;">
+      Nollakorolla erä on yksinkertaisesti (P − B) / n.
     </p>
+
+    <details open>
+      <summary>Todellinen vuosikorko – ja miksi se on ainoa vertailukelpoinen luku</summary>
+      <p style="margin-top:10px;">
+        Nimelliskorko jättää kulut ulkopuolelle, joten kaksi tarjousta samalla korkoprosentilla
+        voivat maksaa satoja euroja eri verran. Todellinen vuosikorko sisältää korot ja kulut
+        ja diskonttaa kaikki maksut niiden ajankohtaan. Se on se korkokanta, jolla maksujen
+        nykyarvo vastaa saatua lainaa:
+      </p>
+      <div class="formula">P = avausmaksu + Σ (erä + tilinhoitomaksu) / (1+X)^(k/12) + B / (1+X)^(n/12)
+                     k = 1…n</div>
+      <p>
+        X ratkaistaan numeerisesti puolitushaulla. Kaava noudattaa kuluttajaluottodirektiivin
+        periaatetta: vuosittainen diskonttaus ja aika vuosina. Luotonantajan on ilmoitettava
+        todellinen vuosikorko tarjouksessa – vertaa tarjouksia sillä, älä korkoprosentilla
+        äläkä kuukausierällä.
+      </p>
+    </details>
+
     <details>
-      <summary>Mitä tämä laskuri ei huomioi</summary>
+      <summary>Mitä tämä laskuri ei edelleenkään huomioi</summary>
       <ul style="margin:10px 0 0;padding-left:20px;">
-        <li>Käsirahaa: ostohinta on tässä koko rahoitettava summa. Jos maksat käsirahan, syötä ostohinnaksi hinta käsirahan jälkeen.</li>
-        <li>Avausmaksua, tilinhoitomaksua ja muita kuluja. Ne eivät näy korkosummassa, mutta nostavat todellista vuosikorkoa selvästi — usein enemmän kuin korkoprosentin desimaalit.</li>
-        <li>Todellista vuosikorkoa. Tämä laskee nimelliskorolla, jossa kuukausikorko on vuosikorko / 12.</li>
-        <li>Viimeisen erän rahoittamista uudelleen, vaihtohyvitystä tai auton arvonalenemaa.</li>
+        <li>Auton arvonalenemaa eikä sitä, mitä auto on oikeasti arvoinen sopimuksen lopussa.</li>
+        <li>Viimeisen erän uudelleenrahoitusta, vaihtohyvitystä tai sopimuksen ennenaikaista päättämistä.</li>
+        <li>Pakollisia vakuutuksia, jos rahoitusyhtiö vaatii sellaisen. Ne kuuluvat todelliseen vuosikorkoon, jos ne ovat luoton ehto.</li>
+        <li>Käteisalennusta: jos saat halvemman hinnan maksamalla käteisellä, vertaa rahoituksen kokonaishintaa käteishintaan, älä listahintaan.</li>
       </ul>
     </details>
   </div>
@@ -280,79 +277,135 @@ korot yhteensä = n × erä + B − ostohinta</div>
 <script>
 (function () {
   var eurot = new Intl.NumberFormat('fi-FI', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  var kentat = ['hinta', 'bullet', 'korko', 'aika'].map(function (id) { return document.getElementById(id); });
+  var pros = new Intl.NumberFormat('fi-FI', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  function laske(hinta, bulletPros, korkoPros, kuukaudet) {
-    var B = hinta * bulletPros / 100;
+  function annuiteetti(P, B, korkoPros, n) {
     var i = korkoPros / 100 / 12;
-    var era;
-    if (i === 0) {
-      era = (hinta - B) / kuukaudet;
-    } else {
-      var v = Math.pow(1 + i, -kuukaudet);
-      era = (hinta - B * v) * i / (1 - v);
-    }
-    return { era: era, bullet: B, korot: era * kuukaudet + B - hinta, kuukausikorko: i };
+    if (i === 0) { return (P - B) / n; }
+    var v = Math.pow(1 + i, -n);
+    return (P - B * v) * i / (1 - v);
   }
 
-  function taulukoi(hinta, tulos, kuukaudet) {
-    var rivit = [];
-    var jaljella = hinta;
-    for (var kk = 1; kk <= kuukaudet; kk++) {
-      var korko = jaljella * tulos.kuukausikorko;
-      var lyhennys = tulos.era - korko;
-      jaljella = jaljella + korko - tulos.era;
-      if (kk === kuukaudet) { jaljella = tulos.bullet; }
-      rivit.push(
-        '<tr><td>' + kk + '</td><td>' + eurot.format(tulos.era) + '</td><td>' +
-        eurot.format(korko) + '</td><td>' + eurot.format(lyhennys) + '</td><td>' +
-        eurot.format(Math.max(jaljella, 0)) + '</td></tr>'
-      );
+  // Todellinen vuosikorko: ratkaistaan X puolitushaulla nykyarvoyhtälöstä.
+  function todellinenVuosikorko(P, B, era, n, avaus, tili) {
+    function nykyarvo(X) {
+      var summa = avaus; // maksetaan hetkellä 0
+      for (var k = 1; k <= n; k++) { summa += (era + tili) / Math.pow(1 + X, k / 12); }
+      summa += B / Math.pow(1 + X, n / 12);
+      return summa - P;
     }
-    rivit.push(
-      '<tr><td>' + kuukaudet + '*</td><td>' + eurot.format(tulos.bullet) +
-      '</td><td>' + eurot.format(0) + '</td><td>' + eurot.format(tulos.bullet) +
-      '</td><td>' + eurot.format(0) + '</td></tr>'
-    );
+    if (Math.abs(nykyarvo(0)) < 1e-9) { return 0; }
+    var lo = 0, hi = 100;
+    if (nykyarvo(hi) > 0) { return NaN; }
+    for (var it = 0; it < 200; it++) {
+      var mid = (lo + hi) / 2;
+      if (nykyarvo(mid) > 0) { lo = mid; } else { hi = mid; }
+    }
+    return (lo + hi) / 2 * 100;
+  }
+
+  function laske(v) {
+    var P = v.hinta - v.kasiraha;
+    var B = v.hinta * v.bullet / 100;
+    var era = annuiteetti(P, B, v.korko, v.aika);
+    var korot = era * v.aika + B - P;
+    var tiliYht = v.tili * v.aika;
+    var kulut = v.avaus + tiliYht;
+    return {
+      P: P, B: B, era: era, korot: korot, tiliYht: tiliYht, kulut: kulut,
+      kuukausikorko: v.korko / 100 / 12,
+      eraKuluineen: era + v.tili,
+      kustannukset: korot + kulut,
+      maksutYhteensa: v.kasiraha + v.avaus + (era + v.tili) * v.aika + B,
+      tvk: todellinenVuosikorko(P, B, era, v.aika, v.avaus, v.tili)
+    };
+  }
+
+  function taulukoi(t, n) {
+    var rivit = [], jaljella = t.P;
+    for (var kk = 1; kk <= n; kk++) {
+      var korko = jaljella * t.kuukausikorko;
+      var lyhennys = t.era - korko;
+      jaljella = jaljella + korko - t.era;
+      if (kk === n) { jaljella = t.B; }
+      rivit.push('<tr><td>' + kk + '</td><td>' + eurot.format(t.era) + '</td><td>' + eurot.format(korko) +
+        '</td><td>' + eurot.format(lyhennys) + '</td><td>' + eurot.format(Math.max(jaljella, 0)) + '</td></tr>');
+    }
+    rivit.push('<tr><td>' + n + '*</td><td>' + eurot.format(t.B) + '</td><td>' + eurot.format(0) +
+      '</td><td>' + eurot.format(t.B) + '</td><td>' + eurot.format(0) + '</td></tr>');
     return rivit.join('');
   }
+
+  var tyhjat = ['era', 'korot', 'tvk', 'kustannukset', 'paaoma', 'era-puhdas', 'avaus-eur', 'tili-yht', 'bullet-eur', 'yhteensa'];
 
   function virhe(teksti) {
     var el = document.getElementById('virhe');
     el.textContent = teksti || '';
     el.classList.toggle('on', Boolean(teksti));
     if (teksti) {
-      ['era', 'korot'].forEach(function (id) { document.getElementById(id).textContent = '–'; });
-      ['bullet-eur', 'kpl', 'yhteensa'].forEach(function (id) { document.getElementById(id).textContent = '–'; });
+      tyhjat.forEach(function (id) { document.getElementById(id).textContent = '–'; });
       document.getElementById('taulukko').innerHTML = '';
+      document.getElementById('huomio').classList.add('hidden');
     }
   }
+
+  function lue(id) { return parseFloat(document.getElementById(id).value); }
 
   function paivita() {
-    var hinta = parseFloat(document.getElementById('hinta').value);
-    var bullet = parseFloat(document.getElementById('bullet').value);
-    var korko = parseFloat(document.getElementById('korko').value);
-    var kuukaudet = parseInt(document.getElementById('aika').value, 10);
+    var v = {
+      hinta: lue('hinta'), kasiraha: lue('kasiraha'), bullet: lue('bullet'),
+      korko: lue('korko'), aika: parseInt(document.getElementById('aika').value, 10),
+      avaus: lue('avaus'), tili: lue('tili')
+    };
+    for (var avain in v) { if (!isFinite(v[avain])) { return virhe('Täytä kaikki kentät.'); } }
+    if (v.hinta <= 0) { return virhe('Ostohinnan on oltava suurempi kuin nolla.'); }
+    if (v.kasiraha < 0) { return virhe('Käsiraha ei voi olla negatiivinen.'); }
+    if (v.kasiraha >= v.hinta) { return virhe('Käsiraha kattaa koko hinnan – rahoitettavaa ei jää.'); }
+    if (v.bullet < 0 || v.bullet >= 100) { return virhe('Viimeinen erä on 0–99 % ostohinnasta.'); }
+    if (v.korko < 0) { return virhe('Korko ei voi olla negatiivinen.'); }
+    if (v.aika < 1 || v.aika > 600) { return virhe('Maksuaika on 1–600 kuukautta.'); }
+    if (v.avaus < 0 || v.tili < 0) { return virhe('Kulut eivät voi olla negatiivisia.'); }
 
-    if (!isFinite(hinta) || !isFinite(bullet) || !isFinite(korko) || !isFinite(kuukaudet)) {
-      return virhe('Täytä kaikki kentät.');
+    var B = v.hinta * v.bullet / 100;
+    if (B >= v.hinta - v.kasiraha) {
+      return virhe('Viimeinen erä (' + eurot.format(B) + ') on vähintään yhtä suuri kuin rahoitettava summa. Pienennä sen osuutta tai käsirahaa.');
     }
-    if (hinta <= 0) { return virhe('Ostohinnan on oltava suurempi kuin nolla.'); }
-    if (bullet < 0 || bullet >= 100) { return virhe('Viimeinen erä on 0–99 % ostohinnasta.'); }
-    if (korko < 0) { return virhe('Korko ei voi olla negatiivinen.'); }
-    if (kuukaudet < 1 || kuukaudet > 600) { return virhe('Maksuaika on 1–600 kuukautta.'); }
     virhe('');
 
-    var t = laske(hinta, bullet, korko, kuukaudet);
-    document.getElementById('era').textContent = eurot.format(t.era);
+    var t = laske(v);
+    document.getElementById('era').textContent = eurot.format(t.eraKuluineen);
+    document.getElementById('era-sub').textContent = v.tili > 0
+      ? 'sisältää tilinhoitomaksun ' + eurot.format(v.tili)
+      : 'ei tilinhoitomaksua';
     document.getElementById('korot').textContent = eurot.format(t.korot);
-    document.getElementById('bullet-eur').textContent = eurot.format(t.bullet);
-    document.getElementById('kpl').textContent = kuukaudet + ' kpl';
-    document.getElementById('yhteensa').textContent = eurot.format(t.era * kuukaudet + t.bullet);
-    document.getElementById('taulukko').innerHTML = taulukoi(hinta, t, kuukaudet);
+    document.getElementById('tvk').textContent = isFinite(t.tvk) ? pros.format(t.tvk) + ' %' : '–';
+    document.getElementById('tvk-sub').textContent = 'nimelliskorko ' + pros.format(v.korko) + ' %';
+    document.getElementById('kustannukset').textContent = eurot.format(t.kustannukset);
+
+    document.getElementById('paaoma').textContent = eurot.format(t.P);
+    document.getElementById('era-puhdas').textContent = eurot.format(t.era);
+    document.getElementById('avaus-eur').textContent = eurot.format(v.avaus);
+    document.getElementById('tili-yht').textContent = eurot.format(t.tiliYht);
+    document.getElementById('bullet-eur').textContent = eurot.format(t.B);
+    document.getElementById('yhteensa').textContent = eurot.format(t.maksutYhteensa);
+
+    var huomio = document.getElementById('huomio');
+    var ero = t.tvk - v.korko;
+    if (isFinite(t.tvk) && ero >= 0.1) {
+      huomio.textContent = 'Kulut nostavat todellista vuosikorkoa ' + pros.format(ero) +
+        ' prosenttiyksikköä nimelliskoron yli. Se on ' + eurot.format(t.kulut) +
+        ' laina-aikana – vertaa tarjouksia todellisella vuosikorolla.';
+      huomio.classList.remove('hidden');
+    } else {
+      huomio.classList.add('hidden');
+    }
+
+    document.getElementById('taulukko').innerHTML = taulukoi(t, v.aika);
   }
 
-  kentat.forEach(function (el) { el.addEventListener('input', paivita); });
+  Array.prototype.forEach.call(document.querySelectorAll('#lomake input'), function (el) {
+    el.addEventListener('input', paivita);
+  });
   document.getElementById('lomake').addEventListener('submit', function (e) { e.preventDefault(); });
   paivita();
 })();
