@@ -61,12 +61,12 @@
   .hint { display: block; font-weight: 400; color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
 
   .input-row { display: flex; }
-  input[type="number"] {
+  .input-row input {
     flex: 1 1 auto; min-width: 0; font: inherit; font-variant-numeric: tabular-nums;
     padding: 10px 12px; color: var(--text); background: var(--bg);
     border: 1px solid var(--border); border-radius: 8px 0 0 8px; border-right: none;
   }
-  input[type="number"]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .input-row input:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
   .unit {
     display: flex; align-items: center; padding: 0 12px;
     background: var(--accent-soft); border: 1px solid var(--border);
@@ -96,6 +96,17 @@
     background: var(--flag-soft); color: var(--flag); font-size: 0.88rem;
   }
   .note.hidden { display: none; }
+
+  .actions { margin-top: 22px; }
+  button.laske {
+    width: 100%; font: inherit; font-size: 1rem; font-weight: 650;
+    min-height: 50px; padding: 14px 20px;
+    border: none; border-radius: 10px; cursor: pointer;
+    background: var(--accent); color: var(--surface);
+    -webkit-tap-highlight-color: transparent;
+  }
+  button.laske:active { filter: brightness(0.92); }
+  button.laske:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 
   .error { display: none; margin-top: 16px; padding: 10px 12px; border-left: 3px solid var(--flag); color: var(--flag); font-size: 0.9rem; }
   .error.on { display: block; }
@@ -132,23 +143,23 @@
       <div class="fields">
         <div>
           <label for="hinta">Ostohinta<span class="hint">Auton hinta euroina</span></label>
-          <div class="input-row"><input id="hinta" type="number" min="0" step="100" value="30000" inputmode="decimal"><span class="unit">€</span></div>
+          <div class="input-row"><input id="hinta" type="text" autocomplete="off" enterkeyhint="done" value="30000" inputmode="decimal"><span class="unit">€</span></div>
         </div>
         <div>
           <label for="kasiraha">Käsiraha<span class="hint">Itse maksettava osuus</span></label>
-          <div class="input-row"><input id="kasiraha" type="number" min="0" step="100" value="5000" inputmode="decimal"><span class="unit">€</span></div>
+          <div class="input-row"><input id="kasiraha" type="text" autocomplete="off" enterkeyhint="done" value="5000" inputmode="decimal"><span class="unit">€</span></div>
         </div>
         <div>
           <label for="bullet">Viimeinen suurempi erä<span class="hint">Osuus ostohinnasta</span></label>
-          <div class="input-row"><input id="bullet" type="number" min="0" max="99" step="1" value="30" inputmode="decimal"><span class="unit">%</span></div>
+          <div class="input-row"><input id="bullet" type="text" autocomplete="off" enterkeyhint="done" value="30" inputmode="decimal"><span class="unit">%</span></div>
         </div>
         <div>
           <label for="korko">Lainan korko<span class="hint">Nimellinen vuosikorko</span></label>
-          <div class="input-row"><input id="korko" type="number" min="0" max="100" step="0.01" value="5.9" inputmode="decimal"><span class="unit">% / vuosi</span></div>
+          <div class="input-row"><input id="korko" type="text" autocomplete="off" enterkeyhint="done" value="5,9" inputmode="decimal"><span class="unit">% / vuosi</span></div>
         </div>
         <div>
           <label for="aika">Maksuaika<span class="hint">Sopimuksen pituus</span></label>
-          <div class="input-row"><input id="aika" type="number" min="1" max="600" step="1" value="60" inputmode="numeric"><span class="unit">kk</span></div>
+          <div class="input-row"><input id="aika" type="text" autocomplete="off" enterkeyhint="done" value="60" inputmode="numeric"><span class="unit">kk</span></div>
         </div>
       </div>
     </div>
@@ -158,18 +169,21 @@
       <div class="fields">
         <div>
           <label for="avaus">Avausmaksu<span class="hint">Kertaluonteinen perustamiskulu</span></label>
-          <div class="input-row"><input id="avaus" type="number" min="0" step="10" value="250" inputmode="decimal"><span class="unit">€</span></div>
+          <div class="input-row"><input id="avaus" type="text" autocomplete="off" enterkeyhint="done" value="250" inputmode="decimal"><span class="unit">€</span></div>
         </div>
         <div>
           <label for="tili">Tilinhoitomaksu<span class="hint">Laskutuslisä joka erässä</span></label>
-          <div class="input-row"><input id="tili" type="number" min="0" step="1" value="8" inputmode="decimal"><span class="unit">€ / kk</span></div>
+          <div class="input-row"><input id="tili" type="text" autocomplete="off" enterkeyhint="done" value="8" inputmode="decimal"><span class="unit">€ / kk</span></div>
         </div>
       </div>
+    </div>
+    <div class="actions">
+      <button type="submit" class="laske">Laske</button>
     </div>
     <p class="error" id="virhe" role="alert"></p>
   </form>
 
-  <div class="card">
+  <div class="card" id="tulokset">
     <div class="results">
       <div class="result">
         <div class="k">Kuukausierä</div>
@@ -349,20 +363,51 @@ korot = n × erä + B − P</div>
     }
   }
 
-  function lue(id) { return parseFloat(document.getElementById(id).value); }
+  var nimet = {
+    hinta: 'Ostohinta', kasiraha: 'Käsiraha', bullet: 'Viimeinen suurempi erä',
+    korko: 'Lainan korko', aika: 'Maksuaika', avaus: 'Avausmaksu', tili: 'Tilinhoitomaksu'
+  };
 
-  function paivita() {
-    var v = {
-      hinta: lue('hinta'), kasiraha: lue('kasiraha'), bullet: lue('bullet'),
-      korko: lue('korko'), aika: parseInt(document.getElementById('aika').value, 10),
-      avaus: lue('avaus'), tili: lue('tili')
-    };
-    for (var avain in v) { if (!isFinite(v[avain])) { return virhe('Täytä kaikki kentät.'); } }
+  // Luetaan kentät itse: selaimen type="number" hylkää pilkun, jota suomalainen
+  // näppäimistö tarjoaa desimaalierottimeksi. Kelpuutetaan sekä pilkku että piste.
+  function lueKentat() {
+    var tulos = { arvot: {}, tyhjat: [], virheelliset: [] };
+    Object.keys(nimet).forEach(function (id) {
+      var raaka = document.getElementById(id).value
+        .replace(/[\s\u00a0\u202f]/g, '')
+        .replace(',', '.');
+      tulos.arvot[id] = NaN;
+      if (raaka === '' || raaka === '.') { tulos.tyhjat.push(nimet[id]); return; }
+      if (!/^\d+(\.\d*)?$|^\.\d+$/.test(raaka)) { tulos.virheelliset.push(nimet[id]); return; }
+      tulos.arvot[id] = parseFloat(raaka);
+    });
+    return tulos;
+  }
+
+  function luettele(lista) {
+    return lista.length === 1 ? lista[0]
+      : lista.slice(0, -1).join(', ') + ' ja ' + lista[lista.length - 1];
+  }
+
+  // pakota = painiketta painettiin. Kesken kirjoittamisen tyhjästä kentästä ei
+  // huudeta, jotta tulokset eivät vilku kentän tyhjennyksen aikana.
+  function paivita(pakota) {
+    var luettu = lueKentat();
+    var v = luettu.arvot;
+
+    if (luettu.virheelliset.length) {
+      return virhe('Tarkista ' + (luettu.virheelliset.length > 1 ? 'kentät' : 'kenttä') +
+        ': ' + luettele(luettu.virheelliset) + '. Käytä vain numeroita, desimaalierottimena pilkku tai piste.');
+    }
+    if (luettu.tyhjat.length) {
+      if (!pakota) { return; }
+      return virhe('Täytä ' + (luettu.tyhjat.length > 1 ? 'kentät' : 'kenttä') + ': ' + luettele(luettu.tyhjat) + '.');
+    }
+
     if (v.hinta <= 0) { return virhe('Ostohinnan on oltava suurempi kuin nolla.'); }
-    if (v.kasiraha < 0) { return virhe('Käsiraha ei voi olla negatiivinen.'); }
     if (v.kasiraha >= v.hinta) { return virhe('Käsiraha kattaa koko hinnan – rahoitettavaa ei jää.'); }
-    if (v.bullet < 0 || v.bullet >= 100) { return virhe('Viimeinen erä on 0–99 % ostohinnasta.'); }
-    if (v.korko < 0) { return virhe('Korko ei voi olla negatiivinen.'); }
+    if (v.bullet >= 100) { return virhe('Viimeinen erä on 0–99 % ostohinnasta.'); }
+    if (v.aika !== Math.floor(v.aika)) { return virhe('Maksuaika on kokonaisia kuukausia.'); }
     if (v.aika < 1 || v.aika > 600) { return virhe('Maksuaika on 1–600 kuukautta.'); }
     if (v.avaus < 0 || v.tili < 0) { return virhe('Kulut eivät voi olla negatiivisia.'); }
 
@@ -404,10 +449,21 @@ korot = n × erä + B − P</div>
   }
 
   Array.prototype.forEach.call(document.querySelectorAll('#lomake input'), function (el) {
-    el.addEventListener('input', paivita);
+    el.addEventListener('input', function () { paivita(false); });
   });
-  document.getElementById('lomake').addEventListener('submit', function (e) { e.preventDefault(); });
-  paivita();
+
+  document.getElementById('lomake').addEventListener('submit', function (e) {
+    e.preventDefault();
+    // Sulkee mobiilin näppäimistön, jotta tulokset näkyvät.
+    if (document.activeElement && document.activeElement.blur) { document.activeElement.blur(); }
+    paivita(true);
+    var kohde = document.getElementById('virhe').classList.contains('on')
+      ? document.getElementById('virhe')
+      : document.getElementById('tulokset');
+    if (kohde.scrollIntoView) { kohde.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  });
+
+  paivita(true);
 })();
 </script>
 </body>

@@ -17,6 +17,16 @@ kulut ja todellisen vuosikoron, joka on ainoa vertailukelpoinen luku.
 | Avausmaksu | Kertaluonteinen perustamiskulu |
 | Tilinhoitomaksu | Laskutuslisä joka erässä |
 
+## Käyttö
+
+Syötä luvut ja paina **Laske**. Tulokset päivittyvät myös kirjoittaessa, mutta painike on
+mobiilia varten: numeronäppäimistössä ei ole rivinvaihtonäppäintä, eikä laskentaa saa muuten
+laukaistua tahdonalaisesti.
+
+Desimaalierottimena käy sekä pilkku että piste, ja tuhaterottimena välilyönti (`30 000`).
+Kentät ovat tekstikenttiä, koska selaimen `type="number"` hylkää pilkun: Chromium muuttaa
+syötteen `7,5` hiljaa muotoon `75`, jolloin laskuri antaisi väärän vastauksen ilman virhettä.
+
 ## Tulokset
 
 - Kuukausierä tilinhoitomaksuineen
