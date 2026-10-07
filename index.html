@@ -137,7 +137,7 @@
   <h1>Annuiteettilaskuri</h1>
   <p class="lead">Autorahoituksen kuukausierä, korot, kulut ja todellinen vuosikorko.</p>
 
-  <form id="lomake" class="card" novalidate>
+  <div id="lomake" class="card">
     <div class="group">
       <p class="group-title">Kauppa ja laina</p>
       <div class="fields">
@@ -178,10 +178,10 @@
       </div>
     </div>
     <div class="actions">
-      <button type="submit" class="laske">Laske</button>
+      <button type="button" class="laske" id="laske">Laske</button>
     </div>
     <p class="error" id="virhe" role="alert"></p>
-  </form>
+  </div>
 
   <div class="card" id="tulokset">
     <div class="results">
@@ -452,8 +452,7 @@ korot = n × erä + B − P</div>
     el.addEventListener('input', function () { paivita(false); });
   });
 
-  document.getElementById('lomake').addEventListener('submit', function (e) {
-    e.preventDefault();
+  function laskeNapista() {
     // Sulkee mobiilin näppäimistön, jotta tulokset näkyvät.
     if (document.activeElement && document.activeElement.blur) { document.activeElement.blur(); }
     paivita(true);
@@ -461,6 +460,15 @@ korot = n × erä + B − P</div>
       ? document.getElementById('virhe')
       : document.getElementById('tulokset');
     if (kohde.scrollIntoView) { kohde.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  }
+
+  document.getElementById('laske').addEventListener('click', laskeNapista);
+
+  // Enter työpöydällä tekee saman kuin painike.
+  Array.prototype.forEach.call(document.querySelectorAll('#lomake input'), function (el) {
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); laskeNapista(); }
+    });
   });
 
   paivita(true);

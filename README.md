@@ -27,6 +27,20 @@ Desimaalierottimena käy sekä pilkku että piste, ja tuhaterottimena välilyön
 Kentät ovat tekstikenttiä, koska selaimen `type="number"` hylkää pilkun: Chromium muuttaa
 syötteen `7,5` hiljaa muotoon `75`, jolloin laskuri antaisi väärän vastauksen ilman virhettä.
 
+## Avaaminen iPhonella
+
+iOS:n Tiedostot-sovellus avaa HTML-tiedoston esikatseluna, jossa JavaScript on rajoitettu.
+Laskuri ei toimi siellä. Käytä jotain näistä:
+
+1. **GitHub Pages** tai muu staattinen isännöinti. Oikea osoite Safarissa, ja sivun voi lisätä
+   aloitusnäyttöön, jolloin se käyttäytyy kuin sovellus.
+2. **Paikallinen palvelin samassa verkossa:** `python3 -m http.server 8000` repositorion juuressa,
+   ja avaa puhelimella `http://<koneen-ip>:8000`.
+3. **Git-sovellus, jossa on esikatselupalvelin**, esimerkiksi Working Copy.
+
+Tiedosto ei enää nollaa syötteitä esikatselussa, koska sivulla ei ole lomakelähetystä, mutta
+laskenta vaatii JavaScriptin.
+
 ## Tulokset
 
 - Kuukausierä tilinhoitomaksuineen
