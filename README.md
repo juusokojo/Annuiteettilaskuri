@@ -41,6 +41,9 @@ Laskuri ei toimi siellä. Käytä jotain näistä:
 Tiedosto ei enää nollaa syötteitä esikatselussa, koska sivulla ei ole lomakelähetystä, mutta
 laskenta vaatii JavaScriptin.
 
+Sivulla on oma kuvake ja web app manifest, joten *Lisää aloitusnäyttöön* antaa kunnollisen
+kuvakkeen ja avaa laskurin ilman selaimen osoiteriviä.
+
 ## Tulokset
 
 - Kuukausierä tilinhoitomaksuineen
